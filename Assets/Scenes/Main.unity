@@ -475,10 +475,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  highlightMat: {fileID: 0}
-  defaultMat: {fileID: 0}
   distance: 10
   size: 2
+  travelTime: 1
 --- !u!1 &663073431
 GameObject:
   m_ObjectHideFlags: 0
@@ -721,10 +720,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  highlightMat: {fileID: 0}
-  defaultMat: {fileID: 0}
   distance: 10
   size: 2
+  travelTime: 1
 --- !u!1 &732700660
 GameObject:
   m_ObjectHideFlags: 0
@@ -1123,10 +1121,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  highlightMat: {fileID: 2100000, guid: a1d202547064ca842b82654561ca5f65, type: 2}
-  defaultMat: {fileID: 2100000, guid: 79762c7c7a298b045b79fff6a53190ae, type: 2}
   distance: 10
   size: 2
+  travelTime: 1
 --- !u!1 &1293069716
 GameObject:
   m_ObjectHideFlags: 0
