@@ -17,6 +17,7 @@ public class GravityGlove : MonoBehaviour
     [SerializeField] private Mesh drawMesh;
     
     [Header("You can change these")]
+    [SerializeField] private SteamVR_Input_Sources inputSource;
     [SerializeField] private float distance;
     [SerializeField] private float size;
     [SerializeField] private Vector3 rotationOffset;
@@ -46,8 +47,8 @@ public class GravityGlove : MonoBehaviour
 
     private void Update()
     {
-        isGrabbing = hand.grabGripAction.state || hand.grabPinchAction.state;
-        // isGrabbing = Input.GetKey(KeyCode.Mouse0);
+        isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || SteamVR_Actions._default.GrabPinch[inputSource].state;
+        //isGrabbing = Input.GetKey(KeyCode.Mouse0);
     }
 
     private void FixedUpdate()
@@ -59,7 +60,7 @@ public class GravityGlove : MonoBehaviour
             targettedThrowable.GetComponent<MeshRenderer>().material.color = ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
         }
 
-        if (isGrabbing && null != targettedThrowable && targettedThrowable != activeThrowable)
+        if (isGrabbing && null != targettedThrowable && null == activeThrowable)
         {
             targettedThrowable.GetComponent<Rigidbody>().velocity = GetLaunchVelocity(targettedThrowable.transform.position, transform.position, travelTime);
             activeThrowable = targettedThrowable;

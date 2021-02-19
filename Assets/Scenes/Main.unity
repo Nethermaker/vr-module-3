@@ -475,8 +475,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  inputSource: 1
   distance: 10
   size: 2
+  rotationOffset: {x: 0, y: 0, z: 0}
   travelTime: 1
 --- !u!1 &663073431
 GameObject:
@@ -720,8 +722,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  inputSource: 2
   distance: 10
   size: 2
+  rotationOffset: {x: 0, y: 0, z: 0}
   travelTime: 1
 --- !u!1 &732700660
 GameObject:
@@ -1121,8 +1125,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   drawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  inputSource: 12
   distance: 10
   size: 2
+  rotationOffset: {x: 0, y: 0, z: 0}
   travelTime: 1
 --- !u!1 &1293069716
 GameObject:
