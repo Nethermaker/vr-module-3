@@ -22,6 +22,9 @@ public class GravityGlove : MonoBehaviour
     [SerializeField] private float size;
     [SerializeField] private Vector3 rotationOffset;
     [SerializeField] private float travelTime;
+    [SerializeField] private float autoAttachDistance;
+    [SerializeField] private float pullActivationSpeed;
+
     private Vector3 center;
     private Vector3 direction;
     private Vector3 scale;
@@ -30,11 +33,8 @@ public class GravityGlove : MonoBehaviour
     private bool isGrabbing;
 
     private Hand hand;
-    private SteamVR_Action_Boolean grabPinch = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "grabPinch");
-    private SteamVR_Action_Boolean grabGrip = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "grabGrip");
 
     private GameObject targettedThrowable;
-    private GameObject previousThrowable;
     private GameObject activeThrowable;
     
     private void Start()
@@ -47,25 +47,46 @@ public class GravityGlove : MonoBehaviour
 
     private void Update()
     {
-        isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || SteamVR_Actions._default.GrabPinch[inputSource].state;
-        //isGrabbing = Input.GetKey(KeyCode.Mouse0);
+        isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || Input.GetKey(KeyCode.Mouse0);
     }
 
     private void FixedUpdate()
     {
-        targettedThrowable = SelectThrowable();
+        if (null == hand)
+        {
+            targettedThrowable = SelectThrowable();
+        }
+        else if (null == hand.currentAttachedObject)
+        {
+            targettedThrowable = SelectThrowable();
+        }
+        else
+        {
+            targettedThrowable = null;
+        }
 
         if (null != targettedThrowable)
         {
             targettedThrowable.GetComponent<MeshRenderer>().material.color = ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
         }
 
-        if (isGrabbing && null != targettedThrowable && null == activeThrowable)
+        if (isPulling() && null != targettedThrowable && null == activeThrowable)
         {
             targettedThrowable.GetComponent<Rigidbody>().velocity = GetLaunchVelocity(targettedThrowable.transform.position, transform.position, travelTime);
             activeThrowable = targettedThrowable;
             StartCoroutine(DeactiveThrowable(travelTime + 0.5f));
         }
+
+        if (null != activeThrowable)
+        {
+            // TODO: Check isGrabbing
+            if (Vector3.Distance(activeThrowable.transform.position, transform.position) <= autoAttachDistance)
+            {
+                // TODO: Allow for both types of grab
+                hand.AttachObject(activeThrowable, GrabTypes.Grip);
+            }
+        }
+
         isGrabbing = false;
     }
 
@@ -73,6 +94,20 @@ public class GravityGlove : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         activeThrowable = null;
+    }
+
+    private bool isPulling()
+    {
+        if (null != hand)
+        {
+            Vector3 velocity, angularVelocity;
+            hand.GetEstimatedPeakVelocities(out velocity, out angularVelocity);
+            return isGrabbing && velocity.magnitude >= pullActivationSpeed; // TODO: Check vector direction
+        }
+        else
+        {
+            return isGrabbing;
+        }
     }
 
     private GameObject SelectThrowable()
@@ -121,7 +156,6 @@ public class GravityGlove : MonoBehaviour
 
         // Calculate Vertical launch velocity
         float verticalOffset = target.y - start.y;
-        Debug.Log(verticalOffset);
         float gravity = Physics.gravity.y;
         float verticalSpeed = Math.Abs(gravity) * (time / 2) + verticalOffset;
 
