@@ -18,12 +18,12 @@ public class GravityGlove : MonoBehaviour
     
     [Header("You can change these")]
     [SerializeField] private SteamVR_Input_Sources inputSource;
-    [SerializeField] private float distance;
-    [SerializeField] private float size;
+    [SerializeField] private float distance = 10;
+    [SerializeField] private float size = 4;
     [SerializeField] private Vector3 rotationOffset;
-    [SerializeField] private float travelTime;
-    [SerializeField] private float autoAttachDistance;
-    [SerializeField] private float pullActivationSpeed;
+    [SerializeField] private float travelTime = 1;
+    [SerializeField] private float autoAttachDistance = 0.15f;
+    [SerializeField] private float pullActivationSpeed = 1;
 
     private Vector3 center;
     private Vector3 direction;
@@ -35,6 +35,7 @@ public class GravityGlove : MonoBehaviour
     private Hand hand;
 
     private GameObject targettedThrowable;
+    private GameObject primedThrowable;
     private GameObject activeThrowable;
     
     private void Start()
@@ -47,11 +48,14 @@ public class GravityGlove : MonoBehaviour
 
     private void Update()
     {
-        isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || Input.GetKey(KeyCode.Mouse0);
+        isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || SteamVR_Actions._default.GrabPinch[inputSource].state || Input.GetKey(KeyCode.Mouse0);
+
+        Debug.DrawRay(transform.position, direction * distance);
     }
 
     private void FixedUpdate()
     {
+        // Determine which throwable is currently being pointed at
         if (null == hand)
         {
             targettedThrowable = SelectThrowable();
@@ -65,29 +69,55 @@ public class GravityGlove : MonoBehaviour
             targettedThrowable = null;
         }
 
+        // "Prime" the targetted throwable
+        if (null != primedThrowable && isGrabbing)
+        {
+            // If throwable is primed and player is grabbing, don't change primed throwable
+        }
+        else if (null != targettedThrowable && isGrabbing)
+        {
+            // If player is targetting a throwable and grabbing, prime the throwable
+            primedThrowable = targettedThrowable;
+        }
+        else
+        {
+            primedThrowable = null;
+        }
+
+        // Debug display colors
         if (null != targettedThrowable)
         {
             targettedThrowable.GetComponent<MeshRenderer>().material.color = ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
         }
-
-        if (isPulling() && null != targettedThrowable && null == activeThrowable)
+        if (null != primedThrowable)
         {
-            targettedThrowable.GetComponent<Rigidbody>().velocity = GetLaunchVelocity(targettedThrowable.transform.position, transform.position, travelTime);
-            activeThrowable = targettedThrowable;
+            primedThrowable.GetComponent<MeshRenderer>().material.color = Color.yellow;
+        }
+
+        // Launch the throwable
+        if (isPulling() && null != primedThrowable && null == activeThrowable)
+        {
+            primedThrowable.GetComponent<Rigidbody>().velocity = GetLaunchVelocity(primedThrowable.transform.position, transform.position, travelTime);
+            activeThrowable = primedThrowable;
+            primedThrowable = null;
             StartCoroutine(DeactiveThrowable(travelTime + 0.5f));
         }
 
         if (null != activeThrowable)
         {
-            // TODO: Check isGrabbing
             if (Vector3.Distance(activeThrowable.transform.position, transform.position) <= autoAttachDistance)
             {
-                // TODO: Allow for both types of grab
-                hand.AttachObject(activeThrowable, GrabTypes.Grip);
+                if (SteamVR_Actions._default.GrabGrip[inputSource].state)
+                {
+                    hand.AttachObject(activeThrowable, GrabTypes.Grip);
+                }
+                else if (SteamVR_Actions._default.GrabPinch[inputSource].state)
+                {
+                    hand.AttachObject(activeThrowable, GrabTypes.Pinch);
+                }
+                activeThrowable = null;
             }
         }
-
-        isGrabbing = false;
     }
 
     private IEnumerator DeactiveThrowable(float delay)
@@ -102,27 +132,31 @@ public class GravityGlove : MonoBehaviour
         {
             Vector3 velocity, angularVelocity;
             hand.GetEstimatedPeakVelocities(out velocity, out angularVelocity);
-            return isGrabbing && velocity.magnitude >= pullActivationSpeed; // TODO: Check vector direction
+            return isGrabbing && 
+                velocity.magnitude >= pullActivationSpeed && 
+                Vector3.Dot(velocity, (transform.position - primedThrowable.transform.position)) >= 0; // Moving away from throwable
         }
         else
         {
-            return isGrabbing;
+            return Input.GetKey(KeyCode.Space);
         }
     }
 
     private GameObject SelectThrowable()
     {
-        // TODO: This `direction` will probably have to change when attached to hands
-        direction = Quaternion.Euler(rotationOffset) * transform.forward; 
+        // TODO: Figure out how to set rotation
+        direction = Quaternion.AngleAxis(rotationOffset.x, transform.right) * 
+            Quaternion.AngleAxis(rotationOffset.y, transform.up) * 
+            Quaternion.AngleAxis(rotationOffset.z, transform.forward) * 
+            transform.forward; 
         center = transform.position + direction * distance / 2;
         scale = new Vector3(size, size, distance);
-        //rotation = transform.rotation * Quaternion.Euler(rotationOffset);
-        rotation = transform.rotation;
+        rotation = Quaternion.LookRotation(direction, transform.up);
         
         // Get all colliders within the box we've created and loop over each
         Collider[] hitColliders = Physics.OverlapBox(center, scale / 2, rotation, mLayerMask, QueryTriggerInteraction.Ignore);
         GameObject best = null;
-        float bestScore = Single.PositiveInfinity;
+        float bestScore = float.PositiveInfinity;
         foreach (Collider collider in hitColliders)
         {
             if (collider.gameObject.GetComponent<Throwable>())
