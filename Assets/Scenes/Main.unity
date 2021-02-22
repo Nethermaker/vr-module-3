@@ -478,7 +478,7 @@ MonoBehaviour:
   inputSource: 1
   distance: 10
   size: 4
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: 45, y: 45, z: 0}
   travelTime: 1
   autoAttachDistance: 0.15
   pullActivationSpeed: 1
@@ -727,7 +727,7 @@ MonoBehaviour:
   inputSource: 2
   distance: 10
   size: 4
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: 45, y: -45, z: 0}
   travelTime: 1
   autoAttachDistance: 0.15
   pullActivationSpeed: 1
