@@ -101,7 +101,10 @@ public class GravityGlove : MonoBehaviour
             activeThrowable = primedThrowable;
             primedThrowable = null;
             StartCoroutine(DeactiveThrowable(travelTime + 0.5f));
-            hand.TriggerHapticPulse(10);
+            if (null != hand)
+            {
+                hand.TriggerHapticPulse(10);
+            }
         }
 
         if (null != activeThrowable)
