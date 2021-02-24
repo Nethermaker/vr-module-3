@@ -9,35 +9,36 @@ public class GravityGlove : MonoBehaviour
     bool mStarted;
     
     [Header("Debug")]
-    [SerializeField] private LayerMask layerMask;
     [SerializeField] private Mesh debugDrawMesh;
     
     [Header("Settings")]
     [SerializeField] private SteamVR_Input_Sources inputSource;
+    [SerializeField] private LayerMask layerMask;
     [SerializeField] private float distance = 10;
     [SerializeField] private float size = 4;
-    [SerializeField] private Vector3 rotationOffset;
     [SerializeField] private float travelTime = 1;
-    [SerializeField] private float autoAttachDistance = 0.15f;
+    [SerializeField] private float adjustmentForce = 50;
+    [SerializeField] private float autoAttachDistance = 0.3f;
     [SerializeField] private float pullActivationSpeed = 1;
 
     [Header("Visuals")]
     [SerializeField] private bool showLine = true;
-
     [SerializeField] private GravityPath gravityPath;
 
     private Vector3 center;
     private Vector3 direction;
     private Vector3 scale;
+    private Vector3 rotationOffset;
     private Quaternion rotation;
 
     private bool isGrabbing;
+    private Vector3 previousPosition;
 
     private Hand hand;
 
     private GameObject targettedThrowable;
     private GameObject primedThrowable;
-    private GameObject activeThrowable;
+    public GameObject activeThrowable;
     
     private void Start()
     {
@@ -45,6 +46,15 @@ public class GravityGlove : MonoBehaviour
         mStarted = true;
 
         hand = GetComponent<Hand>();
+
+        if (inputSource == SteamVR_Input_Sources.LeftHand)
+        {
+            rotationOffset = new Vector3(45, 30, 0);
+        }
+        else if (inputSource == SteamVR_Input_Sources.RightHand)
+        {
+            rotationOffset = new Vector3(45, -30, 0);
+        }
     }
 
     private void Update()
@@ -52,7 +62,16 @@ public class GravityGlove : MonoBehaviour
         isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || SteamVR_Actions._default.GrabPinch[inputSource].state || Input.GetKey(KeyCode.Mouse0);
 
         if (showLine && gravityPath)
-            DrawLineToThrowable();
+        {
+            if (hand == null)
+            {
+                DrawLineToThrowable();
+            }
+            else if (hand.currentAttachedObject == null)
+            {
+                DrawLineToThrowable();
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -101,6 +120,7 @@ public class GravityGlove : MonoBehaviour
 
         if (null != activeThrowable)
         {
+            AdjustObjectTrajectory(activeThrowable);
             if (Vector3.Distance(activeThrowable.transform.position, transform.position) <= autoAttachDistance)
             {
                 if (SteamVR_Actions._default.GrabGrip[inputSource].state)
@@ -114,6 +134,15 @@ public class GravityGlove : MonoBehaviour
                 activeThrowable = null;
             }
         }
+
+        previousPosition = transform.position;
+    }
+
+    private void AdjustObjectTrajectory(GameObject throwable)
+    {
+        Vector3 movement = transform.position - previousPosition;
+        Rigidbody rb = throwable.GetComponent<Rigidbody>();
+        rb.AddForce(movement * rb.mass * adjustmentForce);
     }
 
     private IEnumerator DeactivateThrowable(float delay)

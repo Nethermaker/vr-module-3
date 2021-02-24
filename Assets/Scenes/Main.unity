@@ -500,6 +500,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineSegments: 50
+  curveHeight: 0.1
+  handOffset: {x: 0, y: 0, z: 0}
   dimHighlight: {fileID: 2100000, guid: 956d201757f650747a3afb4b064d4948, type: 2}
   brightHighlight: {fileID: 2100000, guid: e4423f07d690d0543a370abb1538cdc8, type: 2}
 --- !u!114 &480250610
@@ -606,7 +608,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.04999733
+        value: 0.01256752
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -670,19 +672,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf9e3f2935684cd469b29eaa6e1cff50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debugDrawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  inputSource: 1
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  debugDrawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  inputSource: 1
   distance: 10
   size: 4
-  rotationOffset: {x: 45, y: 45, z: 0}
   travelTime: 1
-  autoAttachDistance: 0.15
+  adjustmentForce: 50
+  autoAttachDistance: 0.3
   pullActivationSpeed: 1
   showLine: 1
   gravityPath: {fileID: 986128006}
+  activeThrowable: {fileID: 0}
 --- !u!1 &663073431
 GameObject:
   m_ObjectHideFlags: 0
@@ -921,19 +924,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf9e3f2935684cd469b29eaa6e1cff50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debugDrawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  inputSource: 2
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  debugDrawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  inputSource: 2
   distance: 10
   size: 4
-  rotationOffset: {x: 45, y: -45, z: 0}
   travelTime: 1
-  autoAttachDistance: 0.15
+  adjustmentForce: 50
+  autoAttachDistance: 0.3
   pullActivationSpeed: 1
   showLine: 1
   gravityPath: {fileID: 480250609}
+  activeThrowable: {fileID: 0}
 --- !u!1 &732700660
 GameObject:
   m_ObjectHideFlags: 0
@@ -1363,7 +1367,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.04999733
+        value: 0.01256752
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -1423,6 +1427,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineSegments: 50
+  curveHeight: 0.1
+  handOffset: {x: 0, y: 0, z: 0}
   dimHighlight: {fileID: 2100000, guid: 956d201757f650747a3afb4b064d4948, type: 2}
   brightHighlight: {fileID: 2100000, guid: e4423f07d690d0543a370abb1538cdc8, type: 2}
 --- !u!114 &986128007
@@ -1457,7 +1463,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 1
+    vertexPathUpToDate: 0
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 1
@@ -1527,19 +1533,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf9e3f2935684cd469b29eaa6e1cff50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debugDrawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  inputSource: 12
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  debugDrawMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  inputSource: 12
   distance: 10
   size: 4
-  rotationOffset: {x: 0, y: 0, z: 0}
   travelTime: 1
-  autoAttachDistance: 0.15
+  adjustmentForce: 50
+  autoAttachDistance: 0.3
   pullActivationSpeed: 1
   showLine: 1
   gravityPath: {fileID: 986128006}
+  activeThrowable: {fileID: 0}
 --- !u!1 &1293069716
 GameObject:
   m_ObjectHideFlags: 0
