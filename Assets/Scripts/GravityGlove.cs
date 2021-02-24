@@ -1,10 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Serialization;
-using static UnityEngine.Random;
 using Valve.VR;
 using Valve.VR.InteractionSystem;
 
@@ -12,11 +8,11 @@ public class GravityGlove : MonoBehaviour
 {
     bool mStarted;
     
-    [Header("Probably don't change these")]
-    [SerializeField] private LayerMask mLayerMask;
-    [SerializeField] private Mesh drawMesh;
+    [Header("Debug")]
+    [SerializeField] private LayerMask layerMask;
+    [SerializeField] private Mesh debugDrawMesh;
     
-    [Header("You can change these")]
+    [Header("Settings")]
     [SerializeField] private SteamVR_Input_Sources inputSource;
     [SerializeField] private float distance = 10;
     [SerializeField] private float size = 4;
@@ -24,6 +20,11 @@ public class GravityGlove : MonoBehaviour
     [SerializeField] private float travelTime = 1;
     [SerializeField] private float autoAttachDistance = 0.15f;
     [SerializeField] private float pullActivationSpeed = 1;
+
+    [Header("Visuals")]
+    [SerializeField] private bool showLine = true;
+
+    [SerializeField] private GravityPath gravityPath;
 
     private Vector3 center;
     private Vector3 direction;
@@ -50,7 +51,8 @@ public class GravityGlove : MonoBehaviour
     {
         isGrabbing = SteamVR_Actions._default.GrabGrip[inputSource].state || SteamVR_Actions._default.GrabPinch[inputSource].state || Input.GetKey(KeyCode.Mouse0);
 
-        Debug.DrawRay(transform.position, direction * distance);
+        if (showLine && gravityPath)
+            DrawLineToThrowable();
     }
 
     private void FixedUpdate()
@@ -84,23 +86,13 @@ public class GravityGlove : MonoBehaviour
             primedThrowable = null;
         }
 
-        // Debug display colors
-        if (null != targettedThrowable)
-        {
-            targettedThrowable.GetComponent<MeshRenderer>().material.color = ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
-        }
-        if (null != primedThrowable)
-        {
-            primedThrowable.GetComponent<MeshRenderer>().material.color = Color.yellow;
-        }
-
         // Launch the throwable
         if (isPulling() && null != primedThrowable && null == activeThrowable)
         {
             primedThrowable.GetComponent<Rigidbody>().velocity = GetLaunchVelocity(primedThrowable.transform.position, transform.position, travelTime);
             activeThrowable = primedThrowable;
             primedThrowable = null;
-            StartCoroutine(DeactiveThrowable(travelTime + 0.5f));
+            StartCoroutine(DeactivateThrowable(travelTime + 0.5f));
             if (null != hand)
             {
                 hand.TriggerHapticPulse(10);
@@ -124,7 +116,7 @@ public class GravityGlove : MonoBehaviour
         }
     }
 
-    private IEnumerator DeactiveThrowable(float delay)
+    private IEnumerator DeactivateThrowable(float delay)
     {
         yield return new WaitForSeconds(delay);
         activeThrowable = null;
@@ -158,7 +150,7 @@ public class GravityGlove : MonoBehaviour
         rotation = Quaternion.LookRotation(direction, transform.up);
         
         // Get all colliders within the box we've created and loop over each
-        Collider[] hitColliders = Physics.OverlapBox(center, scale / 2, rotation, mLayerMask, QueryTriggerInteraction.Ignore);
+        Collider[] hitColliders = Physics.OverlapBox(center, scale / 2, rotation, layerMask, QueryTriggerInteraction.Ignore);
         GameObject best = null;
         float bestScore = float.PositiveInfinity;
         foreach (Collider collider in hitColliders)
@@ -202,6 +194,22 @@ public class GravityGlove : MonoBehaviour
         return horizontalVelocity + verticalVelocity;
     }
 
+    private void DrawLineToThrowable()
+    {
+        if (null != primedThrowable && null == activeThrowable)
+        {
+            gravityPath.SetPath(transform.position, primedThrowable.transform.position, direction, GravityStatus.PRIMED);
+        }
+        else if (null != targettedThrowable && null == activeThrowable)
+        {
+            gravityPath.SetPath(transform.position, targettedThrowable.transform.position, direction, GravityStatus.TARGETTED);
+        }
+        else
+        {
+            gravityPath.SetPath(Vector3.zero, Vector3.zero, Vector3.zero, GravityStatus.NONE);
+        }
+    }
+
     //Draw the Box Overlap as a gizmo to show where it currently is testing. Click the Gizmos button to see this
     private void OnDrawGizmos()
     {
@@ -209,6 +217,6 @@ public class GravityGlove : MonoBehaviour
         //Check that it is being run in Play Mode, so it doesn't try to draw this in Editor mode
         if (mStarted)
             //Draw a cube where the OverlapBox is (positioned where your GameObject is as well as a size)
-            Gizmos.DrawWireMesh(drawMesh, center, rotation, scale);
+            Gizmos.DrawWireMesh(debugDrawMesh, center, rotation, scale);
     }
 }
