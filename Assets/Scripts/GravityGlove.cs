@@ -108,7 +108,13 @@ public class GravityGlove : MonoBehaviour
         // Launch the throwable
         if (isPulling() && null != primedThrowable && null == activeThrowable)
         {
-            primedThrowable.GetComponent<Rigidbody>().velocity = GetLaunchVelocity(primedThrowable.transform.position, transform.position, travelTime);
+            Rigidbody rb = primedThrowable.GetComponent<Rigidbody>();
+            if (hand != null)
+            {
+                hand.GetEstimatedPeakVelocities(out _, out Vector3 angularVelocity);
+                rb.angularVelocity = angularVelocity;
+            }
+            rb.velocity = GetLaunchVelocity(primedThrowable.transform.position, transform.position, travelTime);
             activeThrowable = primedThrowable;
             primedThrowable = null;
             StartCoroutine(DeactivateThrowable(travelTime + 0.5f));
@@ -155,8 +161,7 @@ public class GravityGlove : MonoBehaviour
     {
         if (null != hand)
         {
-            Vector3 velocity, angularVelocity;
-            hand.GetEstimatedPeakVelocities(out velocity, out angularVelocity);
+            hand.GetEstimatedPeakVelocities(out Vector3 velocity, out _);
             return isGrabbing && 
                 velocity.magnitude >= pullActivationSpeed && 
                 Vector3.Dot(velocity, (transform.position - primedThrowable.transform.position)) >= 0; // Moving away from throwable
