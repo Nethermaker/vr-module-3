@@ -28,6 +28,6 @@ public class ZombieController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("hit");
+        //if(other.gameObject.name.Contains())
     }
 }
